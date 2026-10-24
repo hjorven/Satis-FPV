@@ -151,7 +151,8 @@ int32 SFPVOSD::OnPaint(const FPaintArgs& Args, const FGeometry& Geometry, const 
 	const bool bMetric = Config.Camera.bOSDMetric;
 	const FString Speed = bMetric ? FString::Printf(TEXT("%3.0f KM/H"), T.SpeedKmh) : FString::Printf(TEXT("%3.0f MPH"), T.SpeedKmh * 0.621371f);
 	const FString Alt = bMetric ? FString::Printf(TEXT("ALT %4.0fM"), T.AltitudeM) : FString::Printf(TEXT("ALT %4.0fFT"), T.AltitudeM * 3.28084f);
-	const FString Home = FString::Printf(bMetric ? TEXT("H %4.0fM") : TEXT("H %4.0fFT"), bMetric ? T.HomeDistanceM : T.HomeDistanceM * 3.28084f);
+	const float HomeDist = bMetric ? T.HomeDistanceM : T.HomeDistanceM * 3.28084f;
+	const FString Home = bMetric ? FString::Printf(TEXT("H %4.0fM"), HomeDist) : FString::Printf(TEXT("H %4.0fFT"), HomeDist);
 	DrawText(Out, Layer, Geometry, FVector2D(Size.X - Margin - 170.0, Size.Y - Margin - 78.0), Speed, White);
 	DrawText(Out, Layer, Geometry, FVector2D(Size.X - Margin - 170.0, Size.Y - Margin - 52.0), Alt, White);
 	DrawText(Out, Layer, Geometry, FVector2D(Size.X - Margin - 170.0, Size.Y - Margin - 26.0), Home, White);

@@ -309,7 +309,7 @@ struct FFPVHIDManager::FImpl : public FRunnable
 		UE_LOG(LogFPVDrone, Log, TEXT("HID: opened %s (%d axes, %d buttons)"), *Info.Name, Device.Axes.Num(), Device.NumButtons);
 
 		bStopRequested = false;
-		StopEvent = CreateEventW(nullptr, TRUE, FALSE, nullptr);
+		StopEvent = CreateEventW(nullptr, true, false, nullptr);
 		bThreadRunning = true;
 		Thread = FRunnableThread::Create(this, TEXT("FPVDroneHIDReader"), 0, TPri_AboveNormal);
 		return Thread != nullptr;
@@ -347,7 +347,7 @@ struct FFPVHIDManager::FImpl : public FRunnable
 		Pressed.SetNumZeroed(FMath::Max(1, Device.NumButtons));
 
 		OVERLAPPED Overlapped = {};
-		Overlapped.hEvent = CreateEventW(nullptr, TRUE, FALSE, nullptr);
+		Overlapped.hEvent = CreateEventW(nullptr, true, false, nullptr);
 		HANDLE WaitHandles[2] = { Overlapped.hEvent, StopEvent };
 
 		while (!bStopRequested)
@@ -360,11 +360,11 @@ struct FFPVHIDManager::FImpl : public FRunnable
 				{
 					break; // device unplugged
 				}
-				const DWORD Wait = WaitForMultipleObjects(2, WaitHandles, FALSE, 250);
+				const DWORD Wait = WaitForMultipleObjects(2, WaitHandles, false, 250);
 				if (Wait != WAIT_OBJECT_0)
 				{
 					CancelIo(Device.Handle);
-					GetOverlappedResult(Device.Handle, &Overlapped, &BytesRead, TRUE);
+					GetOverlappedResult(Device.Handle, &Overlapped, &BytesRead, true);
 					if (Wait == WAIT_TIMEOUT)
 					{
 						continue; // radios only send on change, this is normal
@@ -372,7 +372,7 @@ struct FFPVHIDManager::FImpl : public FRunnable
 					break; // stop requested
 				}
 			}
-			if (!GetOverlappedResult(Device.Handle, &Overlapped, &BytesRead, FALSE) || BytesRead == 0)
+			if (!GetOverlappedResult(Device.Handle, &Overlapped, &BytesRead, false) || BytesRead == 0)
 			{
 				break;
 			}
@@ -439,6 +439,10 @@ FFPVHIDManager& FFPVHIDManager::Get()
 	static FFPVHIDManager Instance;
 	return Instance;
 }
+
+// Defined here (not in the header) so the compiler sees the complete FImpl type
+// when it instantiates TUniquePtr<FImpl>'s destructor.
+FFPVHIDManager::FFPVHIDManager() = default;
 
 FFPVHIDManager::~FFPVHIDManager()
 {

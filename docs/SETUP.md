@@ -2,25 +2,31 @@
 
 ## 1. Voraussetzungen
 
-- Satisfactory-Modding-Toolchain nach https://docs.ficsit.app (Starter Project `SatisfactoryModLoader`, passende Unreal-Engine-Version von Coffee Stain, Wwise, Visual Studio 2022 mit C++-Workload).
+- Satisfactory-Modding-Toolchain: Starter Project `SatisfactoryModLoader`, Coffee-Stain-Unreal-Engine (5.6.1-CSS),
+  **Wwise genau 2025.1.6.9117**, Visual Studio 2022 mit C++-Workload (MSVC v14.38-17.8).
 - SML ab Version 3.10.
+
+> **Komplette Einrichtung vom leeren Rechner bis zur Mod im Spiel: siehe [BUILD-LOKAL.md](BUILD-LOKAL.md).**
+> Dort stehen alle Fallstricke (zwei Konto-Verknuepfungen, exakte Wwise-Version, Repo ausserhalb von `Mods`).
 
 ## 2. Mod ins Starter Project holen
 
+> ⚠️ Das Repo **nicht** in `...\Mods\` klonen (sonst `error CS0101: already contains a definition for 'FPVDrone'`).
+> Repo ausserhalb ablegen, nur eine Junction kommt in `Mods`:
+
 ```powershell
-# im Starter Project
-cd SatisfactoryModLoader\Mods
-git clone https://github.com/hjorven/Satis-FPV.git Satis-FPV
-mklink /J FPVDrone Satis-FPV\Mods\FPVDrone
+git clone https://github.com/hjorven/Satis-FPV.git C:\Projekt\Satis-FPV
+New-Item -ItemType Junction -Path C:\Projekt\SatisFPV\Mods\FPVDrone -Target C:\Projekt\Satis-FPV\Mods\FPVDrone
 ```
 
-Danach `FactoryGame.uproject` -> Rechtsklick -> **Generate Visual Studio project files** und in Visual Studio `Development Editor | Win64` bauen.
+Danach `FactoryGame.uproject` -> Rechtsklick -> **Generate Visual Studio project files** und `Development Editor | Win64` bauen
+(Details und Kommandozeilen-Variante in [BUILD-LOKAL.md](BUILD-LOKAL.md)).
 
 ## 3. Einmalige Schritte im Editor
 
 Diese Schritte brauchen Blueprint-Assets und lassen sich nicht aus C++ erledigen:
 
-1. **Root-Modul**: Im Content-Ordner des Plugins (`/FPVDrone/`) einen Blueprint mit Parent `FPVGameWorldModule` anlegen, Name `RootGameWorld_FPVDrone`. In den Class Defaults pruefen, dass `Root Module` angehakt ist und `FPVSchematic_Drone` unter `Schematics` steht.
+1. **Root-Modul**: Bereits im Repo enthalten (`Mods/FPVDrone/Content/RootGameWorld_FPVDrone.uasset`) - nach einem frischen Clone nichts noetig. Falls neu: Blueprint mit Parent `FPVGameWorldModule` im Content-Ordner `/FPVDrone/` anlegen, Name `RootGameWorld_FPVDrone`, speichern. `Root Module` und `FPVSchematic_Drone` sind im C++-Code gesetzt und werden geerbt.
 2. **Shop-Kategorie (empfohlen)**: Blueprint-Kind von `FPVSchematic_Drone` anlegen (`Schematic_FPVDrone`), dort `Schematic Category` (z. B. die Kategorie fuer Ausruestung im AWESOME Shop), Icon und Kosten einstellen. Dann im Root-Modul `FPVSchematic_Drone` durch `Schematic_FPVDrone` ersetzen.
 3. **Assets** aus `Assets/` gemaess `Assets/Docs/ASSETS.md` importieren. Die erwarteten Pfade stehen in `Source/FPVDrone/Private/Content/FPVContentPaths.h`. Fehlt ein Asset, nutzt der Code Platzhalter (Engine-Wuerfel/-Zylinder) bzw. bleibt still.
 4. **FactoryGame-Pfade pruefen**: In `FPVContentPaths.h` stehen die Pfade fuer Coupons, Platinen, Schnelldraht, Rotor, Batterie und die Werkstatt. Im Content Browser jeweils Rechtsklick -> *Copy Reference* und vergleichen.

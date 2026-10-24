@@ -53,7 +53,7 @@ public:
 	~FFPVHIDManager();
 
 private:
-	FFPVHIDManager() = default;
+	FFPVHIDManager();
 
 	struct FImpl;
 	TUniquePtr<FImpl> Impl;
