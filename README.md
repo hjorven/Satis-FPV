@@ -12,6 +12,7 @@ FPV-Drohnen-Mod fuer Satisfactory (SML, Mod-Referenz `FPVDrone`).
 | Dokument | Inhalt |
 |---|---|
 | [docs/PLAN.md](docs/PLAN.md) | Plan und Architektur |
+| [docs/BUILD-LOKAL.md](docs/BUILD-LOKAL.md) | Schritt fuer Schritt: was installieren, wie lokal bauen |
 | [docs/SETUP.md](docs/SETUP.md) | Build, Editor-Schritte, Bedienung, offene Pruefpunkte |
 
 Flugsimulation ohne Unreal testen:
