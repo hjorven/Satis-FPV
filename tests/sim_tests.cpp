@@ -274,6 +274,53 @@ static void TestTurtleAndDisarm()
 	EXPECT(S.Vel.Z < -7.0f, "disarmed craft falls (vz %.2f)", S.Vel.Z);
 }
 
+struct CraftCase { const char* Name; float Mass, Arm, Prop, Drag, Thrust, MotorMs, Idle; int Cells; float Mah; };
+
+static void TestCraftPresets()
+{
+	// Same numbers as FFPVSettings::ApplyPreset.
+	const CraftCase Cases[] = {
+		{ "racer 5in", 0.52f, 0.11f, 5.0f, 0.8f, 17.0f, 20.0f, 0.055f, 6, 1100.0f },
+		{ "cinewhoop 3in", 0.38f, 0.07f, 3.0f, 1.8f, 5.5f, 20.0f, 0.055f, 4, 850.0f },
+		{ "tinywhoop", 0.032f, 0.033f, 1.2f, 2.5f, 0.26f, 15.0f, 0.07f, 1, 300.0f },
+	};
+	for (const CraftCase& C : Cases)
+	{
+		std::printf("craft %s\n", C.Name);
+		Params P;
+		ApplyCraftScaling(P, C.Mass, C.Arm, C.Prop, C.Drag);
+		P.MotorMaxThrust = C.Thrust;
+		P.MotorTimeConstantUp = C.MotorMs / 1000.0f;
+		P.MotorTimeConstantDown = P.MotorTimeConstantUp * 1.25f;
+		P.MotorIdle = C.Idle;
+		P.Cells = C.Cells;
+		P.CapacityMah = C.Mah;
+
+		State S = MakeState(P);
+		Input In;
+		In.Armed = true;
+		In.Throttle = HoverThrottle(P);
+		Run(P, In, S, 2.0f);
+		EXPECT(S.Omega.Size() * RadToDeg < 8.0f, "%s hover rotation %.1f deg/s", C.Name, S.Omega.Size() * RadToDeg);
+
+		In.Roll = 0.6f;
+		Run(P, In, S, 0.4f);
+		const float Want = S.Setpoint[Roll];
+		const float Got = S.Omega.X * RadToDeg;
+		EXPECT(std::fabs(Got - Want) < 0.1f * Want, "%s roll tracking %.0f vs %.0f", C.Name, Got, Want);
+		In.Roll = 0.0f;
+		Run(P, In, S, 0.2f);
+		float Residual = 0.0f;
+		for (int I = 0; I < 300; ++I)
+		{
+			Step(P, In, S);
+			Residual = Max(Residual, std::fabs(S.Omega.X * RadToDeg));
+		}
+		EXPECT(Residual < 15.0f, "%s residual oscillation %.1f deg/s", C.Name, Residual);
+		std::printf("  hover throttle %.2f, roll %.0f/%.0f deg/s, residual %.1f\n", HoverThrottle(P), Got, Want, Residual);
+	}
+}
+
 int main()
 {
 	TestRates();
@@ -287,6 +334,7 @@ int main()
 	TestBattery();
 	Test3D();
 	TestTurtleAndDisarm();
+	TestCraftPresets();
 
 	if (GFailures == 0)
 	{

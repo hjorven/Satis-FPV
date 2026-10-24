@@ -171,6 +171,9 @@ namespace FPVSim
 	// Restore a full battery.
 	void ChargeBattery(const Params& P, State& S);
 
+	// Sets mass/size dependent values (inertia, rotor, drag) scaled from the 5" reference craft.
+	void ApplyCraftScaling(Params& P, float Mass, float ArmLength, float PropInch, float DragScale);
+
 	// Throttle (0..1) that produces hover with a full battery, for presets and tests.
 	float HoverThrottle(const Params& P);
 }

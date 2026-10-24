@@ -197,11 +197,11 @@ namespace FPVSim
 		void MixTurtle(const Params& P, const Input& In, State& S)
 		{
 			// Crash flip: spin individual motors in reverse to flip the craft over.
-			const float Roll = ApplyDeadband(In.Roll, 0.1f);
-			const float Pitch = ApplyDeadband(In.Pitch, 0.1f);
+			const float RollStick = ApplyDeadband(In.Roll, 0.1f);
+			const float PitchStick = ApplyDeadband(In.Pitch, 0.1f);
 			for (int M = 0; M < 4; ++M)
 			{
-				const float Want = MotorY[M] * Roll - MotorX[M] * Pitch;
+				const float Want = MotorY[M] * RollStick - MotorX[M] * PitchStick;
 				// Only motors that push in reverse are used, like Betaflight's flip over after crash.
 				S.MotorCommand[M] = Want < 0.0f ? Clamp(Want, -1.0f, 0.0f) * P.TurtlePower : 0.0f;
 			}
@@ -325,6 +325,24 @@ namespace FPVSim
 		S.MahUsed = 0.0f;
 		S.Voltage = OpenCircuitVoltage(P, 1.0f);
 		S.Current = 0.0f;
+	}
+
+	void ApplyCraftScaling(Params& P, float Mass, float ArmLength, float PropInch, float DragScale)
+	{
+		const Params Ref;
+		const float MassScale = Mass / Ref.Mass;
+		const float ArmScale = ArmLength / Ref.ArmLength;
+		const float PropScale = PropInch / 5.0f;
+		P.Mass = Mass;
+		P.ArmLength = ArmLength;
+		P.Inertia = Ref.Inertia * (MassScale * ArmScale * ArmScale);
+		P.RotorInertia = Ref.RotorInertia * PropScale * PropScale * PropScale * PropScale;
+		P.MotorMaxRadPerSec = Ref.MotorMaxRadPerSec / Max(0.2f, PropScale);
+		P.YawTorqueCoeff = Ref.YawTorqueCoeff * PropScale;
+		P.DragArea = Ref.DragArea * (DragScale * MassScale);
+		P.RotationalDrag = Ref.RotationalDrag * MassScale * ArmScale * ArmScale;
+		P.PropDiameter = PropInch * 0.0254f;
+		P.AvionicsCurrent = Ref.AvionicsCurrent * Min(1.0f, MassScale);
 	}
 
 	float HoverThrottle(const Params& P)
