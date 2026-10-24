@@ -14,7 +14,7 @@ FPV-Drohnen-Mod fuer Satisfactory (Unreal Engine 5 + SML). Mod-Referenz: `FPVDro
 
 | Teil | Datei(en) | Aufgabe |
 |---|---|---|
-| Flugsimulation | `Source/FPVDrone/Public/Sim/*` | Reines C++ ohne UE-Abhaengigkeit: Rates, Flight Controller (PID), Mixer, Motoren, Akku, Aerodynamik. Ausserhalb von UE testbar. |
+| Flugsimulation | `Mods/FPVDrone/Source/FPVDrone/*/Sim/*` | Reines C++ ohne UE-Abhaengigkeit: Rates, Flight Controller (PID), Mixer, Motoren, Akku, Aerodynamik. Ausserhalb von UE testbar. |
 | Drohnen-Actor | `FPVDroneActor` | Replizierter Actor, Kamera, Kollision, Netz-Synchronisierung, Speichern. |
 | Pilot-Link | `FPVPilotLink`, `FPVServerManager` | Pro Spieler ein Actor fuer Server-RPCs (Starten, Ein-/Aussteigen, Aufheben). |
 | Eingabe | `Input/FPVHIDDevice*`, `Input/FPVInputSystem` | Windows-HID-Leser (eigener Thread), Kanal-Mapping, Kalibrierung, Gamepad/Tastatur. |
@@ -40,14 +40,14 @@ FPV-Drohnen-Mod fuer Satisfactory (Unreal Engine 5 + SML). Mod-Referenz: `FPVDro
 ## Arbeitspakete
 
 - [x] Plan
-- [ ] Flugsimulation + Tests (laufen ohne UE: `tests/run_sim_tests.sh`)
-- [ ] Plugin-Grundgeruest (`FPVDrone.uplugin`, `FPVDrone.Build.cs`, Modul)
-- [ ] Drohnen-Actor mit Replikation und Kollision
-- [ ] HID-Eingabe, Mapping, Kalibrierung
-- [ ] Einstellungen + Betaflight-Import + Presets
-- [ ] OSD und Konfigurationsmenue
-- [ ] Item, Rezept, AWESOME-Shop-Schematic
-- [ ] Setup-Anleitung fuer Editor-Schritte
+- [x] Flugsimulation + Tests (laufen ohne UE: `tests/run_sim_tests.sh`)
+- [x] Plugin-Grundgeruest (`FPVDrone.uplugin`, `FPVDrone.Build.cs`, Modul)
+- [x] Drohnen-Actor mit Replikation und Kollision
+- [x] HID-Eingabe, Mapping, Kalibrierung
+- [x] Einstellungen + Betaflight-Import + Presets
+- [x] OSD und Konfigurationsmenue
+- [x] Item, Rezept, AWESOME-Shop-Schematic
+- [x] Setup-Anleitung fuer Editor-Schritte
 
 ## Grenzen
 

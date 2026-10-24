@@ -7,6 +7,8 @@
 #include "HAL/RunnableThread.h"
 #include "Misc/ScopeLock.h"
 
+#include <atomic>
+
 #if FPV_WITH_HID && PLATFORM_WINDOWS
 #include "Windows/WindowsHWrapper.h"
 #include "Windows/AllowWindowsPlatformTypes.h"
@@ -269,8 +271,8 @@ struct FFPVHIDManager::FImpl : public FRunnable
 	FPVHID::FOpenDevice Device;
 	FRunnableThread* Thread = nullptr;
 	HANDLE StopEvent = nullptr;
-	TAtomic<bool> bStopRequested { false };
-	TAtomic<bool> bThreadRunning { false };
+	std::atomic<bool> bStopRequested { false };
+	std::atomic<bool> bThreadRunning { false };
 
 	bool Open(const FFPVHIDDeviceInfo& Info)
 	{
@@ -424,7 +426,7 @@ struct FFPVHIDManager::FImpl
 	mutable FCriticalSection Lock;
 	TArray<FFPVHIDDeviceInfo> Devices;
 	FFPVHIDSnapshot Snapshot;
-	TAtomic<bool> bThreadRunning { false };
+	std::atomic<bool> bThreadRunning { false };
 
 	bool Open(const FFPVHIDDeviceInfo&) { return false; }
 	void Close() {}

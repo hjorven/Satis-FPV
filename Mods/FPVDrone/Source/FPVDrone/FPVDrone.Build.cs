@@ -6,6 +6,8 @@ public class FPVDrone : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 		CppStandard = CppStandardVersion.Cpp20;
+		// Each file keeps its own helpers in local namespaces; no unity blobs mixing them.
+		bUseUnity = false;
 
 		PublicDependencyModuleNames.AddRange(new string[] {
 			"Core", "CoreUObject", "Engine", "InputCore", "ApplicationCore",
