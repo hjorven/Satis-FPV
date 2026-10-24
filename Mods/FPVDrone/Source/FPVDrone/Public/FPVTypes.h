@@ -226,7 +226,7 @@ struct FFPVKeyBindings
 	UPROPERTY(EditAnywhere, BlueprintReadWrite) FString ToggleGoggles = TEXT("K");
 	UPROPERTY(EditAnywhere, BlueprintReadWrite) FString PickUpDrone = TEXT("L");
 	UPROPERTY(EditAnywhere, BlueprintReadWrite) FString OpenMenu = TEXT("F10");
-	UPROPERTY(EditAnywhere, BlueprintReadWrite) FString ToggleCamera = TEXT("C");
+	UPROPERTY(EditAnywhere, BlueprintReadWrite) FString ToggleCamera = TEXT("V");
 
 	// Keyboard / gamepad flying (used when no radio is connected)
 	UPROPERTY(EditAnywhere, BlueprintReadWrite) FString KeyboardArm = TEXT("R");
