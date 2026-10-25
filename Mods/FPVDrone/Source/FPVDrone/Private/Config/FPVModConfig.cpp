@@ -45,8 +45,8 @@ namespace FPVModConfigLocal
 	T* AddProperty(UObject* Outer, UConfigPropertySection* Section, const TCHAR* Key, const FString& Name, const FString& Tooltip)
 	{
 		T* Property = Outer->CreateDefaultSubobject<T>(FName(Key));
-		Property->DisplayName = Name;
-		Property->Tooltip = Tooltip;
+		Property->DisplayName = FText::FromString(Name);
+		Property->Tooltip = FText::FromString(Tooltip);
 		Section->SectionProperties.Add(Key, Property);
 		return Property;
 	}
@@ -59,6 +59,9 @@ UFPVModConfiguration::UFPVModConfiguration()
 	// The name carries the hint too, in case the page does not show the description.
 	DisplayName = LOCTEXT("ConfigName", "FPV Drone (more settings: F10 in game)");
 	Description = LOCTEXT("ConfigDesc", "Basic settings. Rates, PID tuning, radio setup and Betaflight import are in the full FPV menu: press F10 in game (the key can be changed there).");
+
+	// SML reads the id from the class default object when registering the configuration.
+	ConfigId = FPVModConfigLocal::ConfigId;
 
 	const FFPVConfig Defaults;
 	RootSection = CreateDefaultSubobject<UConfigPropertySection>(TEXT("RootSection"));
@@ -98,7 +101,7 @@ void FPVModConfig::Register(UGameInstance* GameInstance)
 	{
 		return;
 	}
-	Manager->RegisterModConfiguration(ConfigId, UFPVModConfiguration::StaticClass());
+	Manager->RegisterModConfiguration(UFPVModConfiguration::StaticClass());
 	RegisteredFor = GameInstance;
 	LastSeen.Reset();
 }

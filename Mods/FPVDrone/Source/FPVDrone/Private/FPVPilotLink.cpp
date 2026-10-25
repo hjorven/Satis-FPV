@@ -250,7 +250,9 @@ FString AFPVServerManager::PlayerKey(const APlayerController* PC)
 	const APlayerState* PlayerState = PC != nullptr ? PC->GetPlayerState<APlayerState>() : nullptr;
 	if (PlayerState != nullptr && PlayerState->GetUniqueId().IsValid())
 	{
-		return PlayerState->GetUniqueId().ToString();
+		// Call ToString() on the underlying net id (virtual, resolved via vtable) instead of
+		// FUniqueNetIdWrapper::ToString(), whose symbol no linked module exports here.
+		return PlayerState->GetUniqueId()->ToString();
 	}
 	return PC != nullptr ? PC->GetName() : FString();
 }

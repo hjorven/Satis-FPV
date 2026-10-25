@@ -105,7 +105,7 @@ bool UFPVLocalSubsystem::IsHoldingRadio(const APlayerController* PC)
 {
 	// The character stays possessed while flying, so this also works with the goggles on.
 	const AFGCharacterPlayer* Character = PC != nullptr ? Cast<AFGCharacterPlayer>(PC->GetPawn()) : nullptr;
-	const AFGEquipment* Equipment = Character != nullptr ? Character->GetActiveEquipment(EEquipmentSlot::ES_ARMS) : nullptr;
+	const AFGEquipment* Equipment = Character != nullptr ? Character->GetEquipmentInSlot(EEquipmentSlot::ES_ARMS) : nullptr;
 	return Equipment != nullptr && Equipment->IsA<AFPVRadioEquipment>();
 }
 
