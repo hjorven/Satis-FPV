@@ -6,6 +6,7 @@
 #include "CoreMinimal.h"
 #include "FGRecipe.h"
 #include "FGSchematic.h"
+#include "Resources/FGEquipmentDescriptor.h"
 #include "Resources/FGItemDescriptor.h"
 #include "Unlocks/FGUnlockRecipe.h"
 #include "FPVContent.generated.h"
@@ -17,6 +18,27 @@ class FPVDRONE_API UFPVItemDescriptor_Drone : public UFGItemDescriptor
 
 public:
 	UFPVItemDescriptor_Drone();
+	static void PatchDefaults();
+};
+
+// The radio is the hand tool (equipment slot "arms") used to launch and fly the drone.
+UCLASS()
+class FPVDRONE_API UFPVItemDescriptor_Radio : public UFGEquipmentDescriptor
+{
+	GENERATED_BODY()
+
+public:
+	UFPVItemDescriptor_Radio();
+	static void PatchDefaults();
+};
+
+UCLASS()
+class FPVDRONE_API UFPVRecipe_Radio : public UFGRecipe
+{
+	GENERATED_BODY()
+
+public:
+	UFPVRecipe_Radio();
 	static void PatchDefaults();
 };
 

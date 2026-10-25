@@ -28,6 +28,11 @@ namespace FPVContentPaths
 	// --- Mod: icons, UI --------------------------------------------------------
 	constexpr const TCHAR* IconBig = TEXT("/FPVDrone/Drone/Icons/IconFPVDrone_256.IconFPVDrone_256");
 	constexpr const TCHAR* IconSmall = TEXT("/FPVDrone/Drone/Icons/IconFPVDrone_64.IconFPVDrone_64");
+	constexpr const TCHAR* IconRadioBig = TEXT("/FPVDrone/Drone/Icons/IconFPVRadio_256.IconFPVRadio_256");
+	constexpr const TCHAR* IconRadioSmall = TEXT("/FPVDrone/Drone/Icons/IconFPVRadio_64.IconFPVRadio_64");
+
+	// Optional Blueprint child of AFPVRadioEquipment with the radio mesh in the hand.
+	constexpr const TCHAR* RadioEquipmentBlueprint = TEXT("/FPVDrone/Equipment/Equip_FPVRadio.Equip_FPVRadio_C");
 	constexpr const TCHAR* OSDVignette = TEXT("/FPVDrone/UI/OSD/T_OSD_GogglesVignette.T_OSD_GogglesVignette");
 	constexpr const TCHAR* OSDStatic = TEXT("/FPVDrone/UI/OSD/T_OSD_StaticNoise.T_OSD_StaticNoise");
 

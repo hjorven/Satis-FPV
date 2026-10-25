@@ -50,6 +50,22 @@ AFPVPilotLink* AFPVPilotLink::FindLocal(const UWorld* World)
 	return nullptr;
 }
 
+AFPVPilotLink* AFPVPilotLink::FindFor(const APlayerController* PC)
+{
+	if (PC == nullptr || PC->GetWorld() == nullptr)
+	{
+		return nullptr;
+	}
+	for (TActorIterator<AFPVPilotLink> It(PC->GetWorld()); It; ++It)
+	{
+		if (It->GetPC() == PC)
+		{
+			return *It;
+		}
+	}
+	return nullptr;
+}
+
 AFPVDroneActor* AFPVPilotLink::FindOwnedDrone() const
 {
 	const APlayerController* PC = GetPC();
@@ -168,11 +184,27 @@ void AFPVPilotLink::Server_PickUp_Implementation()
 		Client_Notify(LOCTEXT("NothingToPickUp", "No drone within reach."));
 		return;
 	}
+	PickUp(Drone);
+}
+
+bool AFPVPilotLink::PickUp(AFPVDroneActor* Drone)
+{
+	APlayerController* PC = GetPC();
+	AFGCharacterPlayer* Character = PC != nullptr ? Cast<AFGCharacterPlayer>(PC->GetPawn()) : nullptr;
+	if (Drone == nullptr || Character == nullptr || Character->GetInventory() == nullptr)
+	{
+		return false;
+	}
+	if (Drone->GetOwner() != nullptr && Drone->GetOwner() != PC)
+	{
+		Client_Notify(LOCTEXT("NotYourDrone", "This drone belongs to another pilot."));
+		return false;
+	}
 	const TSubclassOf<UFGItemDescriptor> DroneItem = UFPVItemDescriptor_Drone::StaticClass();
 	if (Character->GetInventory()->AddStack(FInventoryStack(1, DroneItem), false) == 0)
 	{
 		Client_Notify(LOCTEXT("InventoryFull", "Inventory full."));
-		return;
+		return false;
 	}
 	if (Drone->IsPiloted())
 	{
@@ -183,6 +215,7 @@ void AFPVPilotLink::Server_PickUp_Implementation()
 		Manager->PushStoredCharge(PC, Drone->GetStateOfCharge());
 	}
 	Drone->Destroy();
+	return true;
 }
 
 void AFPVPilotLink::Client_Notify_Implementation(const FText& Message)

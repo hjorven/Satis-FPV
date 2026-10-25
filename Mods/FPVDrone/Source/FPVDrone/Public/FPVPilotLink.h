@@ -31,6 +31,10 @@ public:
 	void Client_Notify(const FText& Message);
 
 	static AFPVPilotLink* FindLocal(const UWorld* World);
+	static AFPVPilotLink* FindFor(const APlayerController* PC);
+
+	// Server: put this drone into the owner's inventory (used by the key and by "use" with E).
+	bool PickUp(AFPVDroneActor* Drone);
 
 private:
 	APlayerController* GetPC() const;

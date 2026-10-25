@@ -10,6 +10,8 @@
 #include "Engine/StaticMesh.h"
 #include "Engine/Texture2D.h"
 #include "Engine/World.h"
+#include "FGCharacterPlayer.h"
+#include "FPVPilotLink.h"
 #include "FPVDroneModule.h"
 #include "FPVSettings.h"
 #include "GameFramework/PlayerController.h"
@@ -1044,6 +1046,31 @@ FFPVTelemetry AFPVDroneActor::GetTelemetry() const
 	T.ArmBlockReason = ArmBlockReason;
 	T.InputSource = InputSourceName;
 	return T;
+}
+
+// --- Use (pick up with E) -------------------------------------------------------------
+
+bool AFPVDroneActor::IsUseable_Implementation() const
+{
+	// Not while someone flies it.
+	return !bPiloted;
+}
+
+FText AFPVDroneActor::GetLookAtDecription_Implementation(AFGCharacterPlayer* ByCharacter, const FUseState& State) const
+{
+	return FText::Format(LOCTEXT("LookAtDrone", "Pick up FPV Drone ({0}%)"), FText::AsNumber(FMath::RoundToInt(ReplicatedState.StateOfCharge * 100.0f)));
+}
+
+void AFPVDroneActor::OnUse_Implementation(AFGCharacterPlayer* ByCharacter, const FUseState& State)
+{
+	if (!HasAuthority() || ByCharacter == nullptr || bPiloted)
+	{
+		return;
+	}
+	if (AFPVPilotLink* Link = AFPVPilotLink::FindFor(ByCharacter->GetController<APlayerController>()))
+	{
+		Link->PickUp(this);
+	}
 }
 
 // --- Save game ---------------------------------------------------------------------------

@@ -29,6 +29,7 @@ public:
 
 private:
 	APlayerController* GetLocalPC() const;
+	static bool IsHoldingRadio(const APlayerController* PC);
 	void HideToast();
 
 	TSharedPtr<SFPVConfigMenu> Menu;

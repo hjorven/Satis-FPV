@@ -11,6 +11,7 @@
 #include "GameFramework/Pawn.h"
 #include "Engine/NetSerialization.h"
 #include "FGSaveInterface.h"
+#include "FGUseableInterface.h"
 #include "FPVTypes.h"
 #include "Sim/FPVFlightSim.h"
 #include "FPVDroneActor.generated.h"
@@ -81,7 +82,7 @@ struct FFPVTelemetry
 };
 
 UCLASS()
-class FPVDRONE_API AFPVDroneActor : public AActor, public IFGSaveInterface
+class FPVDRONE_API AFPVDroneActor : public AActor, public IFGSaveInterface, public IFGUseableInterface
 {
 	GENERATED_BODY()
 
@@ -102,6 +103,17 @@ public:
 	virtual void GatherDependencies_Implementation(TArray<UObject*>& out_dependentObjects) override {}
 	virtual bool NeedTransform_Implementation() override { return true; }
 	virtual bool ShouldSave_Implementation() const override { return true; }
+
+	// IFGUseableInterface: look at the drone and press E (the game's "use" key) to pick it up.
+	virtual void UpdateUseState_Implementation(class AFGCharacterPlayer* ByCharacter, const FVector& AtLocation, class UPrimitiveComponent* ComponentHit, FUseState& OutUseState) override {}
+	virtual void OnUse_Implementation(class AFGCharacterPlayer* ByCharacter, const FUseState& State) override;
+	virtual void OnUseStop_Implementation(class AFGCharacterPlayer* ByCharacter, const FUseState& State) override {}
+	virtual bool IsUseable_Implementation() const override;
+	virtual void StartIsLookedAt_Implementation(class AFGCharacterPlayer* ByCharacter, const FUseState& State) override {}
+	virtual void StopIsLookedAt_Implementation(class AFGCharacterPlayer* ByCharacter, const FUseState& State) override {}
+	virtual FText GetLookAtDecription_Implementation(class AFGCharacterPlayer* ByCharacter, const FUseState& State) const override;
+	virtual void RegisterInteractingPlayer_Implementation(class AFGCharacterPlayer* Player) override {}
+	virtual void UnregisterInteractingPlayer_Implementation(class AFGCharacterPlayer* Player) override {}
 
 	// --- Server API (called by AFPVPilotLink) ----------------------------------
 	void ServerSetPiloted(bool bNewPiloted);

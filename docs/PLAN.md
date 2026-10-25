@@ -34,8 +34,9 @@ FPV-Drohnen-Mod fuer Satisfactory (Unreal Engine 5 + SML). Mod-Referenz: `FPVDro
 
 1. AWESOME Shop: Schematic `FPV-Drohne` kaufen (Standard: 10 Coupons).
 2. Werkstatt (Equipment Workshop): `FPV-Drohne` bauen aus 3 Platinen, 25 Schnelldraht, 2 Rotoren, 10 Gummi.
-3. Taste `K`: Drohne vor dir starten und FPV-Ansicht uebernehmen. Erneut `K`: Brille ab (Drohne bleibt, wo sie ist).
-4. Taste `L` in der Naehe: Drohne aufheben. Der Akku behaelt dabei seinen Ladestand.
+   Ausserdem die *FPV Radio* (Funke + Brille) als Hand-Werkzeug: 1 Platine, 10 Schnelldraht, 4 Gummi.
+3. Funke in die Hand, Linksklick: Drohne vor dir starten und FPV-Ansicht uebernehmen. Erneut Linksklick: Brille ab (Drohne bleibt, wo sie ist). Abkuerzung ohne Funke: `K`.
+4. Drohne anschauen und `E`: aufheben. Der Akku behaelt dabei seinen Ladestand. Abkuerzung: `L`.
 5. Akku laden wie beim Hoverpack: Im Umkreis von 30 m um einen Strommast, eine Wandsteckdose oder eine Stromleitung mit laufender Stromerzeugung laedt die Drohne von leer auf voll in etwa 20 s, gelandet und im Flug. Flugzeit bei gemischtem Fliegen etwa 4 Minuten (Vollgas 2 bis 3, gemuetlich etwa 6).
 6. Taste `F10`: Konfigurationsmenue (Rates, Tuning, Funke, Kamera, Import).
 
@@ -52,6 +53,8 @@ FPV-Drohnen-Mod fuer Satisfactory (Unreal Engine 5 + SML). Mod-Referenz: `FPVDro
 - [x] Setup-Anleitung fuer Editor-Schritte
 - [x] Akku laden am Stromnetz (serverseitig geprueft), Ladestand bleibt beim Aufheben erhalten
 - [x] Baukosten ohne Batterie-Bauteil (Mitte des Spiels)
+- [x] Funke als Hand-Werkzeug (Linksklick), Aufheben mit `E`
+- [ ] Mesh der Funke in der Hand (Blueprint im Editor, siehe SETUP.md)
 - [ ] Optional: Lade- und Startplattform als Gebaeude, Ersatzpropeller
 
 ## Grenzen

@@ -3,6 +3,8 @@
 #include "Engine/Engine.h"
 #include "Engine/GameViewportClient.h"
 #include "Engine/World.h"
+#include "Equipment/FPVRadioEquipment.h"
+#include "FGCharacterPlayer.h"
 #include "FPVPilotLink.h"
 #include "FPVSettings.h"
 #include "GameFramework/PlayerController.h"
@@ -67,7 +69,8 @@ void UFPVLocalSubsystem::Tick(float DeltaTime)
 		return;
 	}
 
-	if (PC->WasInputKeyJustPressed(FFPVSettings::ParseKey(Keys.ToggleGoggles)))
+	const bool bRadioClick = PC->WasInputKeyJustPressed(EKeys::LeftMouseButton) && IsHoldingRadio(PC);
+	if (bRadioClick || PC->WasInputKeyJustPressed(FFPVSettings::ParseKey(Keys.ToggleGoggles)))
 	{
 		if (AFPVPilotLink* Link = AFPVPilotLink::FindLocal(GetWorld()))
 		{
@@ -87,6 +90,14 @@ void UFPVLocalSubsystem::Tick(float DeltaTime)
 		Camera.Mode = Camera.Mode == EFPVCameraMode::FPV ? EFPVCameraMode::Chase : EFPVCameraMode::FPV;
 		FFPVSettings::Save();
 	}
+}
+
+bool UFPVLocalSubsystem::IsHoldingRadio(const APlayerController* PC)
+{
+	// The character stays possessed while flying, so this also works with the goggles on.
+	const AFGCharacterPlayer* Character = PC != nullptr ? Cast<AFGCharacterPlayer>(PC->GetPawn()) : nullptr;
+	const AFGEquipment* Equipment = Character != nullptr ? Character->GetActiveEquipment(EEquipmentSlot::ES_ARMS) : nullptr;
+	return Equipment != nullptr && Equipment->IsA<AFPVRadioEquipment>();
 }
 
 void UFPVLocalSubsystem::OpenMenu()
