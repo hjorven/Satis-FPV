@@ -217,6 +217,12 @@ void SFPVConfigMenu::Construct(const FArguments& InArgs)
 					.Font(BoldFont(20))
 					.ColorAndOpacity(Accent)
 				]
+				+ SVerticalBox::Slot().AutoHeight().Padding(0.0f, 4.0f, 0.0f, 0.0f)
+				[
+					SNew(STextBlock)
+					.Text(LOCTEXT("EscHint", "Basic settings (range, failsafe, OSD, flight time) are also in ESC -> Mods -> FPV Drone."))
+					.ColorAndOpacity(FLinearColor(1.0f, 1.0f, 1.0f, 0.6f))
+				]
 				+ SVerticalBox::Slot().AutoHeight().Padding(0.0f, 8.0f)
 				[
 					Tabs

@@ -2,6 +2,7 @@
 
 #include "Engine/Engine.h"
 #include "Engine/GameViewportClient.h"
+#include "Config/FPVModConfig.h"
 #include "Engine/World.h"
 #include "Equipment/FPVRadioEquipment.h"
 #include "FGCharacterPlayer.h"
@@ -50,6 +51,14 @@ void UFPVLocalSubsystem::Tick(float DeltaTime)
 		{
 			HideToast();
 		}
+	}
+
+	ConfigSyncTimer -= DeltaTime;
+	if (ConfigSyncTimer <= 0.0f)
+	{
+		ConfigSyncTimer = 1.0f;
+		FPVModConfig::Register(GetWorld()->GetGameInstance());
+		FPVModConfig::Sync(GetWorld()->GetGameInstance());
 	}
 
 	APlayerController* PC = GetLocalPC();

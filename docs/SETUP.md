@@ -58,6 +58,13 @@ Baut die Physik/den Flight Controller mit `g++` und prueft Rates, Hover, Sprunga
 
 Alle Tasten sind im Menue unter *Camera & Game* aenderbar.
 
+**Zwei Einstellungs-Menues, die aufeinander verweisen:**
+
+- `ESC` -> *Mods* -> *FPV Drone*: Grundeinstellungen (OSD an/aus, Einheiten, Reichweite, Waende schwaechen das Signal, Failsafe, immer 3D, Flugzeit-Multiplikator).
+- `F10` im Spiel: alles, also Rates mit Kurve, PID-Tuning, Funke (Kalibrierung, Kanal-Zuordnung), Drohne und Akku, Kamera, Tasten, Presets und Betaflight-Import.
+
+Beide Menues zeigen dieselben Werte. Was in einem geaendert wird, steht nach spaetestens einer Sekunde auch im anderen.
+
 **Ablauf**: AWESOME Shop (10 Coupons) -> *FPV Drone* kaufen -> in der Werkstatt (Equipment Workshop) bauen:
 
 - *FPV Radio* (Hand-Werkzeug): 1 Platine, 10 Schnelldraht, 4 Gummi
@@ -94,4 +101,5 @@ Der UE-Teil wurde ohne Satisfactory-Toolchain geschrieben und ist **nicht kompil
 - Ob die Engine-Basisformen (`/Engine/BasicShapes/...`) im gepackten Spiel vorhanden sind (nur relevant, solange die eigenen Meshes fehlen).
 - Native UE-Sounds (Satisfactory nutzt sonst Wwise).
 - Hand-Werkzeug und Benutzen: `AFGEquipment::mEquipmentSlot`, `UFGEquipmentDescriptor::mEquipmentClass`, `AFGCharacterPlayer::GetActiveEquipment(EEquipmentSlot::ES_ARMS)` und die Signaturen von `IFGUseableInterface` (in `FPVDroneActor.h`). Test: Drohne anschauen, es muss "Pick up FPV Drone" erscheinen und `E` muss sie ins Inventar legen. Falls der Linksklick mit der Funke zusaetzlich eine Spielaktion ausloest, bitte melden.
+- SML-Konfiguration in `Private/Config/FPVModConfig.cpp`: `UModConfiguration` (Felder `DisplayName`, `Description`, `RootSection`), `UConfigPropertySection::SectionProperties`, `UConfigPropertyBool/Float` (`Value`, `DefaultValue`, `DisplayName`, `Tooltip`), `UConfigManager::RegisterModConfiguration`, `GetConfigurationRootSection` und `MarkConfigurationDirty`. Test: unter ESC -> Mods muss *FPV Drone* erscheinen, und eine Aenderung dort muss im `F10`-Menue ankommen.
 - Strom-Erkennung in `Private/Power/FPVPowerGrid.cpp`: `UFGPowerConnectionComponent::GetPowerCircuit`, `UFGPowerCircuit::IsFuseTriggered/GetStats` (Feld `PowerProductionCapacity`), `AFGBuildableWire::GetConnection`. Test: Drohne neben einen Strommast mit laufendem Generator setzen, das OSD muss `CHARGING` zeigen. Mit ausgeloester Sicherung darf es nicht laden.

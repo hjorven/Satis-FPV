@@ -35,4 +35,5 @@ private:
 	TSharedPtr<SFPVConfigMenu> Menu;
 	TSharedPtr<SWidget> Toast;
 	float ToastTimeLeft = 0.0f;
+	float ConfigSyncTimer = 0.0f;
 };
