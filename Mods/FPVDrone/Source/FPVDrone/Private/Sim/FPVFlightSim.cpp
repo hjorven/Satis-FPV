@@ -327,6 +327,25 @@ namespace FPVSim
 		S.Current = 0.0f;
 	}
 
+	void AddCharge(const Params& P, State& S, float Fraction)
+	{
+		if (Fraction <= 0.0f)
+		{
+			return;
+		}
+		const float Added = Min(Fraction, 1.0f - S.StateOfCharge);
+		S.StateOfCharge = Min(1.0f, S.StateOfCharge + Added);
+		S.MahUsed = Max(0.0f, S.MahUsed - Added * P.CapacityMah * P.CapacityMultiplier);
+		if (S.StateOfCharge >= 1.0f)
+		{
+			S.MahUsed = 0.0f;
+		}
+		if (S.Current <= P.AvionicsCurrent + 0.01f)
+		{
+			S.Voltage = OpenCircuitVoltage(P, S.StateOfCharge);
+		}
+	}
+
 	void ApplyCraftScaling(Params& P, float Mass, float ArmLength, float PropInch, float DragScale)
 	{
 		const Params Ref;

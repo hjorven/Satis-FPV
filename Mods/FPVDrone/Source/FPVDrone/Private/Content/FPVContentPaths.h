@@ -44,7 +44,7 @@ namespace FPVContentPaths
 	constexpr const TCHAR* ItemCircuitBoard = TEXT("/Game/FactoryGame/Resource/Parts/CircuitBoard/Desc_CircuitBoard.Desc_CircuitBoard_C");
 	constexpr const TCHAR* ItemQuickwire = TEXT("/Game/FactoryGame/Resource/Parts/HighSpeedWire/Desc_HighSpeedWire.Desc_HighSpeedWire_C");
 	constexpr const TCHAR* ItemRotor = TEXT("/Game/FactoryGame/Resource/Parts/Rotor/Desc_Rotor.Desc_Rotor_C");
-	constexpr const TCHAR* ItemBattery = TEXT("/Game/FactoryGame/Resource/Parts/Battery/Desc_Battery.Desc_Battery_C");
+	constexpr const TCHAR* ItemRubber = TEXT("/Game/FactoryGame/Resource/Parts/Rubber/Desc_Rubber.Desc_Rubber_C");
 	constexpr const TCHAR* ItemCoupon = TEXT("/Game/FactoryGame/Resource/Parts/ResourceSinkCoupon/Desc_ResourceSinkCoupon.Desc_ResourceSinkCoupon_C");
 	constexpr const TCHAR* EquipmentWorkshop = TEXT("/Game/FactoryGame/Buildable/-Shared/WorkBench/BP_WorkshopComponent.BP_WorkshopComponent_C");
 	constexpr const TCHAR* CraftBench = TEXT("/Game/FactoryGame/Buildable/-Shared/WorkBench/BP_WorkBenchComponent.BP_WorkBenchComponent_C");

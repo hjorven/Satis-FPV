@@ -8,6 +8,7 @@
 #include "FPVDroneModule.h"
 #include "FPVLocalSubsystem.h"
 #include "GameFramework/PlayerController.h"
+#include "GameFramework/PlayerState.h"
 
 #define LOCTEXT_NAMESPACE "FPVDrone"
 
@@ -146,7 +147,9 @@ void AFPVPilotLink::LaunchFromInventory()
 		Inventory->AddStack(FInventoryStack(1, DroneItem), true);
 		return;
 	}
-	Drone->ServerInitialize(FTransform(Facing, Drone->GetActorLocation()));
+	AFPVServerManager* Manager = AFPVServerManager::Find(GetWorld());
+	const float StateOfCharge = Manager != nullptr ? Manager->PopStoredCharge(PC) : 1.0f;
+	Drone->ServerInitialize(FTransform(Facing, Drone->GetActorLocation()), StateOfCharge);
 	Drone->ServerSetPiloted(true);
 	UE_LOG(LogFPVDrone, Log, TEXT("%s launched a drone"), *PC->GetName());
 }
@@ -175,6 +178,10 @@ void AFPVPilotLink::Server_PickUp_Implementation()
 	{
 		Drone->ServerSetPiloted(false);
 	}
+	if (AFPVServerManager* Manager = AFPVServerManager::Find(GetWorld()))
+	{
+		Manager->PushStoredCharge(PC, Drone->GetStateOfCharge());
+	}
 	Drone->Destroy();
 }
 
@@ -193,6 +200,41 @@ AFPVServerManager::AFPVServerManager()
 	PrimaryActorTick.bCanEverTick = true;
 	PrimaryActorTick.TickInterval = 0.5f;
 	bReplicates = false;
+}
+
+AFPVServerManager* AFPVServerManager::Find(const UWorld* World)
+{
+	if (World == nullptr)
+	{
+		return nullptr;
+	}
+	TActorIterator<AFPVServerManager> It(const_cast<UWorld*>(World));
+	return It ? *It : nullptr;
+}
+
+FString AFPVServerManager::PlayerKey(const APlayerController* PC)
+{
+	const APlayerState* PlayerState = PC != nullptr ? PC->GetPlayerState<APlayerState>() : nullptr;
+	if (PlayerState != nullptr && PlayerState->GetUniqueId().IsValid())
+	{
+		return PlayerState->GetUniqueId().ToString();
+	}
+	return PC != nullptr ? PC->GetName() : FString();
+}
+
+void AFPVServerManager::PushStoredCharge(const APlayerController* PC, float StateOfCharge)
+{
+	StoredCharges.FindOrAdd(PlayerKey(PC)).Add(FMath::Clamp(StateOfCharge, 0.0f, 1.0f));
+}
+
+float AFPVServerManager::PopStoredCharge(const APlayerController* PC)
+{
+	TArray<float>* Charges = StoredCharges.Find(PlayerKey(PC));
+	if (Charges == nullptr || Charges->Num() == 0)
+	{
+		return 1.0f; // freshly crafted
+	}
+	return Charges->Pop();
 }
 
 void AFPVServerManager::Tick(float DeltaSeconds)

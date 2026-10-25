@@ -16,6 +16,7 @@
 #include "Input/FPVInputSystem.h"
 #include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
+#include "Power/FPVPowerGrid.h"
 #include "Sound/SoundBase.h"
 #include "UI/SFPVOSD.h"
 
@@ -147,6 +148,7 @@ void AFPVDroneActor::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLi
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME(AFPVDroneActor, ReplicatedState);
 	DOREPLIFETIME(AFPVDroneActor, bPiloted);
+	DOREPLIFETIME(AFPVDroneActor, bChargerInRange);
 }
 
 void AFPVDroneActor::LoadAssets()
@@ -265,18 +267,24 @@ bool AFPVDroneActor::IsLocallyPiloted() const
 	return bPiloted && PC != nullptr && PC->IsLocalController();
 }
 
-void AFPVDroneActor::ServerInitialize(const FTransform& Transform)
+void AFPVDroneActor::ServerInitialize(const FTransform& Transform, float StateOfCharge)
 {
 	check(HasAuthority());
 	SetActorTransform(Transform);
 	RefreshParams();
 	Sim = FPVSim::State();
 	FPVSim::ChargeBattery(Params, Sim);
+	// The battery keeps its charge while the drone sits in the inventory.
+	Sim.StateOfCharge = 0.0f;
+	Sim.MahUsed = Params.CapacityMah * Params.CapacityMultiplier;
+	FPVSim::AddCharge(Params, Sim, FMath::Clamp(StateOfCharge, 0.0f, 1.0f));
+	Sim.Voltage = FPVSim::OpenCircuitVoltage(Params, Sim.StateOfCharge);
 	Sim.Pos = WorldToSim(Transform.GetLocation());
 	Sim.Rot = WorldToSim(Transform.GetRotation());
 	ReplicatedState = MakeNetState();
-	SavedStateOfCharge = 1.0f;
-	SavedMahUsed = 0.0f;
+	SavedStateOfCharge = Sim.StateOfCharge;
+	SavedMahUsed = Sim.MahUsed;
+	ChargeCheckTimer = 0.0f; // check for power right away
 }
 
 void AFPVDroneActor::ServerSetPiloted(bool bNewPiloted)
@@ -401,6 +409,11 @@ void AFPVDroneActor::Tick(float DeltaSeconds)
 		EndLocalPiloting();
 	}
 
+	if (HasAuthority())
+	{
+		TickServerCharging(DeltaSeconds);
+	}
+
 	if (bLocallyPiloting)
 	{
 		TickLocalPilot(DeltaSeconds);
@@ -456,6 +469,11 @@ void AFPVDroneActor::TickLocalPilot(float DeltaSeconds)
 	SimInput.Turtle = bTurtle;
 
 	StepSimulation(SimInput, DeltaSeconds);
+	if (bChargerInRange)
+	{
+		// The pilot owns the battery state while flying; the server checks the rate.
+		FPVSim::AddCharge(Params, Sim, DeltaSeconds / FPVPowerGrid::SecondsToFull);
+	}
 	MoveWithCollision(DeltaSeconds, true);
 	if (bInContact && (!bArmed || (!bTurtle && FMath::Abs(Sim.ThrottleOut) < 0.1f)))
 	{
@@ -697,6 +715,40 @@ void AFPVDroneActor::SettleOnGround(float DeltaSeconds)
 	}
 }
 
+void AFPVDroneActor::TickServerCharging(float DeltaSeconds)
+{
+	ChargeCheckTimer -= DeltaSeconds;
+	if (ChargeCheckTimer <= 0.0f)
+	{
+		ChargeCheckTimer = 1.0f;
+		const bool bInRange = FPVPowerGrid::IsNearPoweredGrid(GetWorld(), GetActorLocation());
+		if (bInRange != bChargerInRange)
+		{
+			bChargerInRange = bInRange;
+			ForceNetUpdate();
+		}
+	}
+	ChargerGraceTimer = bChargerInRange ? 2.0f : FMath::Max(0.0f, ChargerGraceTimer - DeltaSeconds);
+
+	if (bPiloted || !bChargerInRange || ReplicatedState.StateOfCharge >= 1.0f)
+	{
+		return;
+	}
+	RefreshParams();
+	Sim.StateOfCharge = ReplicatedState.StateOfCharge;
+	Sim.MahUsed = ReplicatedState.MahUsed;
+	FPVSim::AddCharge(Params, Sim, DeltaSeconds / FPVPowerGrid::SecondsToFull);
+	ReplicatedState.StateOfCharge = Sim.StateOfCharge;
+	ReplicatedState.MahUsed = Sim.MahUsed;
+
+	ChargePublishTimer += DeltaSeconds;
+	if (ChargePublishTimer >= 1.0f || Sim.StateOfCharge >= 1.0f)
+	{
+		ChargePublishTimer = 0.0f;
+		ForceNetUpdate();
+	}
+}
+
 void AFPVDroneActor::TickServerSim(float DeltaSeconds)
 {
 	FPVSim::Input Input; // disarmed
@@ -783,7 +835,7 @@ void AFPVDroneActor::Server_SubmitState_Implementation(const FFPVNetState& InSta
 		return; // out of order
 	}
 
-	// Sanity checks: no teleporting, no recharging in flight.
+	// Sanity checks: no teleporting, no recharging away from power.
 	const float Elapsed = FMath::Clamp(State.Time - Previous.Time, 0.0f, 2.0f);
 	const float Allowed = MaxServerSpeedCm * Elapsed + 500.0f;
 	const FVector Delta = FVector(State.Location) - FVector(Previous.Location);
@@ -792,7 +844,9 @@ void AFPVDroneActor::Server_SubmitState_Implementation(const FFPVNetState& InSta
 		UE_LOG(LogFPVDrone, Warning, TEXT("Rejected drone jump of %.0f cm"), Delta.Size());
 		State.Location = FVector(Previous.Location) + Delta.GetSafeNormal() * Allowed;
 	}
-	State.StateOfCharge = FMath::Min(State.StateOfCharge, Previous.StateOfCharge + 0.001f);
+	// Charging is only allowed near power, and no faster than the charger works.
+	const float MaxCharge = ChargerGraceTimer > 0.0f ? Elapsed / FPVPowerGrid::SecondsToFull * 1.25f + 0.01f : 0.001f;
+	State.StateOfCharge = FMath::Min(State.StateOfCharge, Previous.StateOfCharge + MaxCharge);
 
 	ReplicatedState = State;
 	if (GetNetMode() == NM_DedicatedServer)
@@ -986,6 +1040,7 @@ FFPVTelemetry AFPVDroneActor::GetTelemetry() const
 	T.bAirmode = Params.Airmode;
 	T.bFailsafe = bFailsafe;
 	T.bLowBattery = T.CellVoltage < 3.5f;
+	T.bCharging = bChargerInRange && Sim.StateOfCharge < 1.0f;
 	T.ArmBlockReason = ArmBlockReason;
 	T.InputSource = InputSourceName;
 	return T;

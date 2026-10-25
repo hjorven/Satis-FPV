@@ -28,14 +28,16 @@ FPV-Drohnen-Mod fuer Satisfactory (Unreal Engine 5 + SML). Mod-Referenz: `FPVDro
 - Er sendet den Zustand mit 30 Hz per unzuverlaessigem Server-RPC. Der Server prueft Plausibilitaet (Maximalgeschwindigkeit, Sprungweite) und repliziert an alle.
 - Andere Clients interpolieren mit 100 ms Puffer und kurzer Extrapolation.
 - Ohne Pilot (ausgestiegen, Absturz) simuliert der Server den Fall bis zum Stillstand.
+- Laden: Der Server sucht jede Sekunde nach Strom in der Naehe und repliziert `bChargerInRange`. Der Pilot laedt seinen Akku lokal, der Server laesst Ladestand-Anstiege nur in Reichweite und nur bis zur Laderate zu. Ohne Pilot laedt der Server selbst.
 
 ## Ablauf im Spiel
 
 1. AWESOME Shop: Schematic `FPV-Drohne` kaufen (Standard: 10 Coupons).
-2. Werkstatt (Equipment Workshop): `FPV-Drohne` bauen.
+2. Werkstatt (Equipment Workshop): `FPV-Drohne` bauen aus 3 Platinen, 25 Schnelldraht, 2 Rotoren, 10 Gummi.
 3. Taste `K`: Drohne vor dir starten und FPV-Ansicht uebernehmen. Erneut `K`: Brille ab (Drohne bleibt, wo sie ist).
-4. Taste `L` in der Naehe: Drohne aufheben (Akku wird beim naechsten Start voll).
-5. Taste `F10`: Konfigurationsmenue (Rates, Tuning, Funke, Kamera, Import).
+4. Taste `L` in der Naehe: Drohne aufheben. Der Akku behaelt dabei seinen Ladestand.
+5. Akku laden wie beim Hoverpack: Im Umkreis von 30 m um einen Strommast, eine Wandsteckdose oder eine Stromleitung mit laufender Stromerzeugung laedt die Drohne von leer auf voll in etwa 20 s, gelandet und im Flug. Flugzeit bei gemischtem Fliegen etwa 4 Minuten (Vollgas 2 bis 3, gemuetlich etwa 6).
+6. Taste `F10`: Konfigurationsmenue (Rates, Tuning, Funke, Kamera, Import).
 
 ## Arbeitspakete
 
@@ -48,6 +50,9 @@ FPV-Drohnen-Mod fuer Satisfactory (Unreal Engine 5 + SML). Mod-Referenz: `FPVDro
 - [x] OSD und Konfigurationsmenue
 - [x] Item, Rezept, AWESOME-Shop-Schematic
 - [x] Setup-Anleitung fuer Editor-Schritte
+- [x] Akku laden am Stromnetz (serverseitig geprueft), Ladestand bleibt beim Aufheben erhalten
+- [x] Baukosten ohne Batterie-Bauteil (Mitte des Spiels)
+- [ ] Optional: Lade- und Startplattform als Gebaeude, Ersatzpropeller
 
 ## Grenzen
 

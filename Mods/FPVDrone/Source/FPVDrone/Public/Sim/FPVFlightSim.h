@@ -171,6 +171,9 @@ namespace FPVSim
 	// Restore a full battery.
 	void ChargeBattery(const Params& P, State& S);
 
+	// Adds a fraction of the full capacity (0..1), e.g. from a charger. Clamps at full.
+	void AddCharge(const Params& P, State& S, float Fraction);
+
 	// Sets mass/size dependent values (inertia, rotor, drag) scaled from the 5" reference craft.
 	void ApplyCraftScaling(Params& P, float Mass, float ArmLength, float PropInch, float DragScale);
 

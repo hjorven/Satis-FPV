@@ -233,6 +233,48 @@ static void TestBattery()
 	EXPECT(T > 4.0f * 60.0f && T < 20.0f * 60.0f, "hover flight time %.1f min", T / 60.0f);
 }
 
+// Typical freestyle/exploring mix: cruising, a punch-out now and then, some dives.
+static float MixedFlightMinutes(const Params& P)
+{
+	State S = MakeState(P);
+	Input In;
+	In.Armed = true;
+	In.Mode = FlightMode::Angle;
+	const float Hover = HoverThrottle(P);
+	float T = 0.0f;
+	while (S.StateOfCharge > 0.0f && T < 3600.0f)
+	{
+		const int Phase = static_cast<int>(T) % 10;
+		In.Throttle = Phase < 6 ? Hover * 1.35f : (Phase < 9 ? Hover * 0.6f : 1.0f);
+		Run(P, In, S, 1.0f);
+		T += 1.0f;
+		S.Pos = { 0, 0, 100 };
+		S.Vel = { 0, 0, 0 };
+		S.Rot = Quat();
+		S.Omega = { 0, 0, 0 };
+	}
+	return T / 60.0f;
+}
+
+static void TestFlightTimeAndCharging()
+{
+	std::printf("flight time / charging\n");
+	Params P;
+	const float Minutes = MixedFlightMinutes(P);
+	std::printf("  mixed flight time %.1f min\n", Minutes);
+	EXPECT(Minutes > 3.3f && Minutes < 5.0f, "mixed flight time %.1f min, expected about 4", Minutes);
+
+	State S = MakeState(P);
+	S.StateOfCharge = 0.25f;
+	S.MahUsed = 0.75f * P.CapacityMah * P.CapacityMultiplier;
+	AddCharge(P, S, 0.5f);
+	EXPECT(std::fabs(S.StateOfCharge - 0.75f) < 1e-4f, "charge to %.3f", S.StateOfCharge);
+	EXPECT(std::fabs(S.MahUsed - 0.25f * P.CapacityMah) < 0.5f, "mAh used after charging %.0f", S.MahUsed);
+	AddCharge(P, S, 1.0f);
+	EXPECT(S.StateOfCharge == 1.0f && S.MahUsed == 0.0f, "charge clamps at full (%.3f, %.0f mAh)", S.StateOfCharge, S.MahUsed);
+	EXPECT(std::fabs(S.Voltage - OpenCircuitVoltage(P, 1.0f)) < 1e-3f, "voltage after charging %.2f V", S.Voltage);
+}
+
 static void Test3D()
 {
 	std::printf("3D mode\n");
@@ -332,6 +374,7 @@ int main()
 	TestAngleMode();
 	TestTopSpeed();
 	TestBattery();
+	TestFlightTimeAndCharging();
 	Test3D();
 	TestTurtleAndDisarm();
 	TestCraftPresets();

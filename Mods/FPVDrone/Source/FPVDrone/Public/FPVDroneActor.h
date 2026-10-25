@@ -75,6 +75,7 @@ struct FFPVTelemetry
 	bool bAirmode = true;
 	bool bFailsafe = false;
 	bool bLowBattery = false;
+	bool bCharging = false;
 	FText ArmBlockReason;
 	FString InputSource;
 };
@@ -104,8 +105,9 @@ public:
 
 	// --- Server API (called by AFPVPilotLink) ----------------------------------
 	void ServerSetPiloted(bool bNewPiloted);
-	void ServerInitialize(const FTransform& Transform);
+	void ServerInitialize(const FTransform& Transform, float StateOfCharge = 1.0f);
 	bool IsPiloted() const { return bPiloted; }
+	float GetStateOfCharge() const { return ReplicatedState.StateOfCharge; }
 
 	// True on the machine of the player currently flying this drone.
 	bool IsLocallyPiloted() const;
@@ -157,6 +159,10 @@ protected:
 	UPROPERTY(ReplicatedUsing = OnRep_Piloted)
 	bool bPiloted = false;
 
+	// Set by the server while a powered pole or power line is in range (see FPVPowerGrid).
+	UPROPERTY(Replicated)
+	bool bChargerInRange = false;
+
 	UPROPERTY(SaveGame)
 	float SavedStateOfCharge = 1.0f;
 
@@ -197,6 +203,9 @@ private:
 
 	// Server without pilot
 	void TickServerSim(float DeltaSeconds);
+
+	// Server: look for power nearby, charge the battery while nobody flies the drone.
+	void TickServerCharging(float DeltaSeconds);
 
 	// Remote view
 	void TickInterpolation(float DeltaSeconds);
@@ -250,6 +259,9 @@ private:
 	bool bServerSimActive = false;
 	float RestTimer = 0.0f;
 	float ServerTime = 0.0f;
+	float ChargeCheckTimer = 0.0f;
+	float ChargerGraceTimer = 0.0f;	// accept charging reports shortly after leaving the range
+	float ChargePublishTimer = 0.0f;
 
 	// Local view
 	bool bLocallyPiloting = false;

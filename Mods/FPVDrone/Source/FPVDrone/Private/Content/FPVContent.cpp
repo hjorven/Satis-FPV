@@ -32,7 +32,7 @@ using namespace FPVContentLocal;
 UFPVItemDescriptor_Drone::UFPVItemDescriptor_Drone()
 {
 	mDisplayName = LOCTEXT("DroneName", "FPV Drone");
-	mDescription = LOCTEXT("DroneDesc", "A 5\" freestyle quadcopter with goggles and radio link.\n\nPress K to launch it and put the goggles on, K again to take them off. Press L next to it to pick it up. F10 opens the setup (rates, tune, radio).");
+	mDescription = LOCTEXT("DroneDesc", "A 5\" freestyle quadcopter with goggles and radio link.\n\nPress K to launch it and put the goggles on, K again to take them off. Press L next to it to pick it up. F10 opens the setup (rates, tune, radio).\n\nThe battery charges near powered power poles and power lines, like the Hoverpack.");
 	mStackSize = EStackSize::SS_ONE;
 	mForm = EResourceForm::RF_SOLID;
 }
@@ -67,13 +67,14 @@ void UFPVRecipe_Drone::PatchDefaults()
 	{
 		return;
 	}
-	// Frame, 4 motors, flight controller, VTX, battery.
+	// Flight controller + VTX, wiring, motors, frame/props/LiPo pouch. Mid-game parts only, so the
+	// drone is buildable as soon as Caterium and Rubber run (no Battery parts needed).
 	struct FIngredient { const TCHAR* Path; int32 Amount; };
 	const FIngredient Ingredients[] = {
-		{ FPVContentPaths::ItemCircuitBoard, 2 },
-		{ FPVContentPaths::ItemQuickwire, 20 },
-		{ FPVContentPaths::ItemRotor, 1 },
-		{ FPVContentPaths::ItemBattery, 1 },
+		{ FPVContentPaths::ItemCircuitBoard, 3 },
+		{ FPVContentPaths::ItemQuickwire, 25 },
+		{ FPVContentPaths::ItemRotor, 2 },
+		{ FPVContentPaths::ItemRubber, 10 },
 	};
 	for (const FIngredient& Ingredient : Ingredients)
 	{

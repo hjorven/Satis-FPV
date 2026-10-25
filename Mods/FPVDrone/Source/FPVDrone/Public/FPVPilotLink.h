@@ -49,7 +49,18 @@ public:
 	AFPVServerManager();
 	virtual void Tick(float DeltaSeconds) override;
 
+	static AFPVServerManager* Find(const UWorld* World);
+
+	// Battery charge of drones a player packed into the inventory. The next launch uses it,
+	// so picking a drone up does not refill the battery. Not saved: after loading a save,
+	// drones in the inventory start full.
+	void PushStoredCharge(const APlayerController* PC, float StateOfCharge);
+	float PopStoredCharge(const APlayerController* PC);
+
 private:
+	static FString PlayerKey(const APlayerController* PC);
+	TMap<FString, TArray<float>> StoredCharges;
+
 	// Links are kept alive by the world; weak pointers on both sides are enough.
 	TMap<TWeakObjectPtr<APlayerController>, TWeakObjectPtr<AFPVPilotLink>> Links;
 };

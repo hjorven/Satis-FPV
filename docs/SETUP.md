@@ -29,7 +29,7 @@ Diese Schritte brauchen Blueprint-Assets und lassen sich nicht aus C++ erledigen
 1. **Root-Modul**: Bereits im Repo enthalten (`Mods/FPVDrone/Content/RootGameWorld_FPVDrone.uasset`) - nach einem frischen Clone nichts noetig. Falls neu: Blueprint mit Parent `FPVGameWorldModule` im Content-Ordner `/FPVDrone/` anlegen, Name `RootGameWorld_FPVDrone`, speichern. `Root Module` und `FPVSchematic_Drone` sind im C++-Code gesetzt und werden geerbt.
 2. **Shop-Kategorie (empfohlen)**: Blueprint-Kind von `FPVSchematic_Drone` anlegen (`Schematic_FPVDrone`), dort `Schematic Category` (z. B. die Kategorie fuer Ausruestung im AWESOME Shop), Icon und Kosten einstellen. Dann im Root-Modul `FPVSchematic_Drone` durch `Schematic_FPVDrone` ersetzen.
 3. **Assets** aus `Assets/` gemaess `Assets/Docs/ASSETS.md` importieren. Die erwarteten Pfade stehen in `Source/FPVDrone/Private/Content/FPVContentPaths.h`. Fehlt ein Asset, nutzt der Code Platzhalter (Engine-Wuerfel/-Zylinder) bzw. bleibt still.
-4. **FactoryGame-Pfade pruefen**: In `FPVContentPaths.h` stehen die Pfade fuer Coupons, Platinen, Schnelldraht, Rotor, Batterie und die Werkstatt. Im Content Browser jeweils Rechtsklick -> *Copy Reference* und vergleichen.
+4. **FactoryGame-Pfade pruefen**: In `FPVContentPaths.h` stehen die Pfade fuer Coupons, Platinen, Schnelldraht, Rotor, Gummi und die Werkstatt. Im Content Browser jeweils Rechtsklick -> *Copy Reference* und vergleichen.
 
 ## 4. Packen
 
@@ -49,13 +49,15 @@ Baut die Physik/den Flight Controller mit `g++` und prueft Rates, Hover, Sprunga
 | Taste | Funktion |
 |---|---|
 | `K` | Drohne aus dem Inventar starten bzw. Brille auf/ab |
-| `L` | Drohne in der Naehe (5 m) aufheben, Akku wird beim naechsten Start voll |
+| `L` | Drohne in der Naehe (5 m) aufheben, der Ladestand bleibt erhalten |
 | `F10` | Konfigurationsmenue |
 | `V` | FPV- / Verfolgerkamera |
 
 Alle Tasten sind im Menue unter *Camera & Game* aenderbar.
 
-**Ablauf**: AWESOME Shop -> *FPV Drone* kaufen -> in der Werkstatt (Equipment Workshop) bauen -> `K`.
+**Ablauf**: AWESOME Shop (10 Coupons) -> *FPV Drone* kaufen -> in der Werkstatt (Equipment Workshop) bauen (3 Platinen, 25 Schnelldraht, 2 Rotoren, 10 Gummi) -> `K`.
+
+**Akku**: laedt wie das Hoverpack im Umkreis von 30 m um Strommasten, Wandsteckdosen und Stromleitungen eines Netzes mit laufender Stromerzeugung (leer bis voll in etwa 20 s, auch im Flug). Das OSD zeigt dann `CHARGING` und den Ladestand. Flugzeit bei gemischtem Fliegen etwa 4 Minuten. Mehr Flugzeit gibt es im Menue unter *Craft & Battery* (Kapazitaets-Multiplikator) oder mit dem Preset *Beginner*.
 
 ### Fernbedienung (Radiomaster Pocket, EdgeTX)
 
@@ -83,3 +85,4 @@ Der UE-Teil wurde ohne Satisfactory-Toolchain geschrieben und ist **nicht kompil
 - Ob `Pawn->DisableInput(PC)` die Spielfigur waehrend des Flugs vollstaendig stilllegt (Satisfactory nutzt Enhanced Input). Falls nicht: zusaetzlich einen leeren Input Mapping Context mit hoher Prioritaet einhaengen.
 - Ob die Engine-Basisformen (`/Engine/BasicShapes/...`) im gepackten Spiel vorhanden sind (nur relevant, solange die eigenen Meshes fehlen).
 - Native UE-Sounds (Satisfactory nutzt sonst Wwise).
+- Strom-Erkennung in `Private/Power/FPVPowerGrid.cpp`: `UFGPowerConnectionComponent::GetPowerCircuit`, `UFGPowerCircuit::IsFuseTriggered/GetStats` (Feld `PowerProductionCapacity`), `AFGBuildableWire::GetConnection`. Test: Drohne neben einen Strommast mit laufendem Generator setzen, das OSD muss `CHARGING` zeigen. Mit ausgeloester Sicherung darf es nicht laden.

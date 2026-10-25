@@ -142,8 +142,13 @@ int32 SFPVOSD::OnPaint(const FPaintArgs& Args, const FGeometry& Geometry, const 
 		T.LinkQuality < 30 ? Alarm : (T.LinkQuality < 60 ? Warn : White));
 
 	// Bottom left: battery
-	const FLinearColor BatteryColor = T.bLowBattery ? (bBlink ? Alarm : White) : White;
-	DrawText(Out, Layer, Geometry, FVector2D(Margin, Size.Y - Margin - 78.0), FString::Printf(TEXT("%.1fV  %.2fV"), T.Voltage, T.CellVoltage), BatteryColor);
+	const FLinearColor BatteryColor = T.bLowBattery && !T.bCharging ? (bBlink ? Alarm : White) : White;
+	if (T.bCharging)
+	{
+		const FLinearColor ChargeColor(0.35f, 1.0f, 0.45f, 1.0f);
+		DrawText(Out, Layer, Geometry, FVector2D(Margin, Size.Y - Margin - 104.0), FString::Printf(TEXT("CHARGING %3.0f%%"), T.StateOfCharge * 100.0f), ChargeColor);
+	}
+	DrawText(Out, Layer, Geometry, FVector2D(Margin, Size.Y - Margin - 78.0), FString::Printf(TEXT("%.1fV  %.2fV  %3.0f%%"), T.Voltage, T.CellVoltage, T.StateOfCharge * 100.0f), BatteryColor);
 	DrawText(Out, Layer, Geometry, FVector2D(Margin, Size.Y - Margin - 52.0), FString::Printf(TEXT("%5.1fA  %4.0fmAh"), T.Current, T.MahUsed), White);
 	DrawText(Out, Layer, Geometry, FVector2D(Margin, Size.Y - Margin - 26.0), FString::Printf(TEXT("THR %3.0f%%"), T.ThrottlePercent), White);
 
@@ -180,7 +185,7 @@ int32 SFPVOSD::OnPaint(const FPaintArgs& Args, const FGeometry& Geometry, const 
 	{
 		Warning = T.ArmBlockReason.IsEmpty() ? TEXT("DISARMED") : T.ArmBlockReason.ToString();
 	}
-	else if (T.bLowBattery)
+	else if (T.bLowBattery && !T.bCharging)
 	{
 		Warning = TEXT("LOW BATTERY");
 		WarningColor = Alarm;
