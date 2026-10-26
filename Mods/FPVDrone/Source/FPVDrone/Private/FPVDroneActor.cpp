@@ -521,12 +521,16 @@ void AFPVDroneActor::UpdateArming(const FFPVPilotInput& Input)
 	Mode = Input.Mode;
 	bTurtle = Input.bTurtle;
 
-	if (!Input.bArmSwitch || bFailsafe)
+	// An empty pack browns out the flight controller: power is lost, the motors cut and the craft
+	// drops, exactly like a real LiPo hitting 0%. Re-arming needs a recharge (near a power pole).
+	const bool bBatteryEmpty = Sim.StateOfCharge <= 0.0f;
+
+	if (!Input.bArmSwitch || bFailsafe || bBatteryEmpty)
 	{
 		if (bArmed)
 		{
 			bArmed = false;
-			PlaySound2D(bFailsafe ? SoundWarn : SoundDisarm);
+			PlaySound2D((bFailsafe || bBatteryEmpty) ? SoundWarn : SoundDisarm);
 		}
 		if (!Input.bArmSwitch)
 		{
@@ -536,6 +540,10 @@ void AFPVDroneActor::UpdateArming(const FFPVPilotInput& Input)
 		if (bFailsafe)
 		{
 			ArmBlockReason = LOCTEXT("BlockFailsafe", "FAILSAFE");
+		}
+		else if (bBatteryEmpty)
+		{
+			ArmBlockReason = LOCTEXT("BlockEmpty", "BATTERY EMPTY");
 		}
 		return;
 	}
