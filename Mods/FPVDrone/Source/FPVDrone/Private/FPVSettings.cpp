@@ -19,12 +19,21 @@ FFPVTune::FFPVTune()
 
 FFPVRadioSettings::FFPVRadioSettings()
 {
-	// AETR, then AUX1..AUX4 on the next four axes (EdgeTX joystick default order).
 	Channels.SetNum(FPVChannelCount);
-	for (int32 Index = 0; Index < FPVChannelCount; ++Index)
-	{
-		Channels[Index].Axis = Index;
-	}
+	// EdgeTX/OpenTX expose the USB joystick axes sorted X, Y, Z, Rx, Ry, Rz, Slider, Dial, which in
+	// the default AETR channel order is Roll, Pitch, Throttle, Yaw on the first four axes. Our logical
+	// channel enum is ordered Roll, Pitch, Yaw, Throttle, so the old "channel index == axis index"
+	// default put Yaw and Throttle on each other's axis. Map AETR explicitly, then AUX1..AUX4.
+	// (Radios that route gimbals to other usages still need the in-game Detect per channel.)
+	auto Set = [this](EFPVChannel Ch, int32 Axis) { Channels[static_cast<int32>(Ch)].Axis = Axis; };
+	Set(EFPVChannel::Roll, 0);
+	Set(EFPVChannel::Pitch, 1);
+	Set(EFPVChannel::Throttle, 2);
+	Set(EFPVChannel::Yaw, 3);
+	Set(EFPVChannel::Arm, 4);
+	Set(EFPVChannel::FlightMode, 5);
+	Set(EFPVChannel::Mode3D, 6);
+	Set(EFPVChannel::Turtle, 7);
 }
 
 FFPVConfig& FFPVSettings::Get()

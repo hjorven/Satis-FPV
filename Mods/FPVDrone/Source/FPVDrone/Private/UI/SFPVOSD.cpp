@@ -108,6 +108,9 @@ int32 SFPVOSD::OnPaint(const FPaintArgs& Args, const FGeometry& Geometry, const 
 	}
 
 	const double Margin = 40.0;
+	// Satisfactory's own HUD (health bar, hotbar/tools) lives in the bottom band of the screen, and
+	// the goggles OSD is drawn on top of it, so keep the bottom rows clear of that band.
+	const double BottomMargin = 150.0;
 	const FVector2D Center = Size * 0.5;
 
 	// Crosshair
@@ -146,11 +149,11 @@ int32 SFPVOSD::OnPaint(const FPaintArgs& Args, const FGeometry& Geometry, const 
 	if (T.bCharging)
 	{
 		const FLinearColor ChargeColor(0.35f, 1.0f, 0.45f, 1.0f);
-		DrawText(Out, Layer, Geometry, FVector2D(Margin, Size.Y - Margin - 104.0), FString::Printf(TEXT("CHARGING %3.0f%%"), T.StateOfCharge * 100.0f), ChargeColor);
+		DrawText(Out, Layer, Geometry, FVector2D(Margin, Size.Y - BottomMargin - 104.0), FString::Printf(TEXT("CHARGING %3.0f%%"), T.StateOfCharge * 100.0f), ChargeColor);
 	}
-	DrawText(Out, Layer, Geometry, FVector2D(Margin, Size.Y - Margin - 78.0), FString::Printf(TEXT("%.1fV  %.2fV  %3.0f%%"), T.Voltage, T.CellVoltage, T.StateOfCharge * 100.0f), BatteryColor);
-	DrawText(Out, Layer, Geometry, FVector2D(Margin, Size.Y - Margin - 52.0), FString::Printf(TEXT("%5.1fA  %4.0fmAh"), T.Current, T.MahUsed), White);
-	DrawText(Out, Layer, Geometry, FVector2D(Margin, Size.Y - Margin - 26.0), FString::Printf(TEXT("THR %3.0f%%"), T.ThrottlePercent), White);
+	DrawText(Out, Layer, Geometry, FVector2D(Margin, Size.Y - BottomMargin - 78.0), FString::Printf(TEXT("%.1fV  %.2fV  %3.0f%%"), T.Voltage, T.CellVoltage, T.StateOfCharge * 100.0f), BatteryColor);
+	DrawText(Out, Layer, Geometry, FVector2D(Margin, Size.Y - BottomMargin - 52.0), FString::Printf(TEXT("%5.1fA  %4.0fmAh"), T.Current, T.MahUsed), White);
+	DrawText(Out, Layer, Geometry, FVector2D(Margin, Size.Y - BottomMargin - 26.0), FString::Printf(TEXT("THR %3.0f%%"), T.ThrottlePercent), White);
 
 	// Bottom right: speed, altitude, home
 	const bool bMetric = Config.Camera.bOSDMetric;
@@ -158,9 +161,9 @@ int32 SFPVOSD::OnPaint(const FPaintArgs& Args, const FGeometry& Geometry, const 
 	const FString Alt = bMetric ? FString::Printf(TEXT("ALT %4.0fM"), T.AltitudeM) : FString::Printf(TEXT("ALT %4.0fFT"), T.AltitudeM * 3.28084f);
 	const float HomeDist = bMetric ? T.HomeDistanceM : T.HomeDistanceM * 3.28084f;
 	const FString Home = bMetric ? FString::Printf(TEXT("H %4.0fM"), HomeDist) : FString::Printf(TEXT("H %4.0fFT"), HomeDist);
-	DrawText(Out, Layer, Geometry, FVector2D(Size.X - Margin - 170.0, Size.Y - Margin - 78.0), Speed, White);
-	DrawText(Out, Layer, Geometry, FVector2D(Size.X - Margin - 170.0, Size.Y - Margin - 52.0), Alt, White);
-	DrawText(Out, Layer, Geometry, FVector2D(Size.X - Margin - 170.0, Size.Y - Margin - 26.0), Home, White);
+	DrawText(Out, Layer, Geometry, FVector2D(Size.X - Margin - 170.0, Size.Y - BottomMargin - 78.0), Speed, White);
+	DrawText(Out, Layer, Geometry, FVector2D(Size.X - Margin - 170.0, Size.Y - BottomMargin - 52.0), Alt, White);
+	DrawText(Out, Layer, Geometry, FVector2D(Size.X - Margin - 170.0, Size.Y - BottomMargin - 26.0), Home, White);
 
 	// Home arrow above the crosshair
 	{
