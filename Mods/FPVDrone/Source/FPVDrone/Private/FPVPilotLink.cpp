@@ -247,13 +247,11 @@ AFPVServerManager* AFPVServerManager::Find(const UWorld* World)
 
 FString AFPVServerManager::PlayerKey(const APlayerController* PC)
 {
-	const APlayerState* PlayerState = PC != nullptr ? PC->GetPlayerState<APlayerState>() : nullptr;
-	if (PlayerState != nullptr && PlayerState->GetUniqueId().IsValid())
-	{
-		// Call ToString() on the underlying net id (virtual, resolved via vtable) instead of
-		// FUniqueNetIdWrapper::ToString(), whose symbol no linked module exports here.
-		return PlayerState->GetUniqueId()->ToString();
-	}
+	// StoredCharges is a transient, server-side, per-session map, so a key that is stable for the
+	// controller's lifetime is all we need. The player's unique net id looked tempting but is a trap
+	// here: its wrapper symbol isn't even exported to the mod DLL, and in singleplayer GetUniqueId()
+	// dereferenced null (0x0) despite passing IsValid(), crashing the launch. The controller name is
+	// stable per session and sidesteps the whole net-id ABI mess.
 	return PC != nullptr ? PC->GetName() : FString();
 }
 

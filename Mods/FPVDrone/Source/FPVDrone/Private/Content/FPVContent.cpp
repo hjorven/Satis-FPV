@@ -53,6 +53,10 @@ UFPVItemDescriptor_Drone::UFPVItemDescriptor_Drone()
 	mDescription = LOCTEXT("DroneDesc", "A 5\" freestyle quadcopter.\n\nHold the FPV Radio and left click to launch it and put the goggles on, left click again to take them off (shortcut: K). Look at the drone and press E to pick it up. F10 opens the setup (rates, tune, radio).\n\nThe battery charges near powered power poles and power lines, like the Hoverpack.");
 	mStackSize = EStackSize::SS_ONE;
 	mForm = EResourceForm::RF_SOLID;
+	// Pure C++ descriptors never run PostLoad(), which is what caches the stack size
+	// from mStackSize. Without it GetStackSize() returns -1 and the inventory rejects
+	// the item with "not enough space". Cache the SS_ONE value (1) directly.
+	mCachedStackSize = 1;
 }
 
 void UFPVItemDescriptor_Drone::PatchDefaults()
@@ -77,6 +81,8 @@ UFPVItemDescriptor_Radio::UFPVItemDescriptor_Radio()
 	mStackSize = EStackSize::SS_ONE;
 	mForm = EResourceForm::RF_SOLID;
 	mEquipmentClass = AFPVRadioEquipment::StaticClass();
+	// See UFPVItemDescriptor_Drone: cache the SS_ONE stack size for the C++ CDO.
+	mCachedStackSize = 1;
 }
 
 void UFPVItemDescriptor_Radio::PatchDefaults()
@@ -97,7 +103,7 @@ UFPVRecipe_Radio::UFPVRecipe_Radio()
 {
 	mDisplayName = LOCTEXT("RadioRecipeName", "FPV Radio");
 	mProduct.Add(FItemAmount(UFPVItemDescriptor_Radio::StaticClass(), 1));
-	mManufactoringDuration = 4.0f;
+	mManufactoringDuration = 40.0f;
 	mProducedIn.Add(TSoftClassPtr<UObject>(FSoftObjectPath(FPVContentPaths::EquipmentWorkshop)));
 }
 
@@ -117,7 +123,7 @@ UFPVRecipe_Drone::UFPVRecipe_Drone()
 {
 	mDisplayName = LOCTEXT("RecipeName", "FPV Drone");
 	mProduct.Add(FItemAmount(UFPVItemDescriptor_Drone::StaticClass(), 1));
-	mManufactoringDuration = 6.0f;
+	mManufactoringDuration = 60.0f;
 	mProducedIn.Add(TSoftClassPtr<UObject>(FSoftObjectPath(FPVContentPaths::EquipmentWorkshop)));
 }
 
