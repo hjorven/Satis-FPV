@@ -11,6 +11,9 @@
 #include "Engine/Texture2D.h"
 #include "Engine/World.h"
 #include "FGCharacterPlayer.h"
+#include "FGHUD.h"
+#include "UI/FGGameUI.h"
+#include "Blueprint/UserWidget.h"
 #include "FPVPilotLink.h"
 #include "FPVDroneModule.h"
 #include "FPVSettings.h"
@@ -327,10 +330,29 @@ void AFPVDroneActor::BeginLocalPiloting()
 	{
 		Pawn->DisableInput(PC);
 		HomeLocation = Pawn->GetActorLocation();
+		// Hide the pilot while flying, otherwise the drone camera sees the (first-person) body as a
+		// floating head standing at the launch spot.
+		Pawn->SetActorHiddenInGame(true);
 	}
 	else
 	{
 		HomeLocation = GetActorLocation();
+	}
+
+	// Hide the pilot's HUD (hotbar, health, tool menu, crosshair) so only the goggles OSD shows.
+	// SetHUDVisibility only affects the canvas HUD, so collapse the UMG game UI widget directly.
+	if (AFGHUD* HUD = PC->GetHUD<AFGHUD>())
+	{
+		HUD->SetHiddenHUDMode(true);
+		if (UFGGameUI* GameUI = HUD->GetGameUI())
+		{
+			GameUI->SetVisibility(ESlateVisibility::Collapsed);
+		}
+		UE_LOG(LogFPVDrone, Log, TEXT("FPV: HUD hidden (GameUI=%s)"), HUD->GetGameUI() ? TEXT("ok") : TEXT("null"));
+	}
+	else
+	{
+		UE_LOG(LogFPVDrone, Warning, TEXT("FPV: no AFGHUD found to hide"));
 	}
 
 	RefreshParams();
@@ -388,7 +410,16 @@ void AFPVDroneActor::EndLocalPiloting()
 		if (Pawn != nullptr)
 		{
 			Pawn->EnableInput(PC);
+			Pawn->SetActorHiddenInGame(false);
 			PC->SetViewTargetWithBlend(Pawn, 0.2f);
+		}
+		if (AFGHUD* HUD = PC->GetHUD<AFGHUD>())
+		{
+			HUD->SetHiddenHUDMode(false);
+			if (UFGGameUI* GameUI = HUD->GetGameUI())
+			{
+				GameUI->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+			}
 		}
 	}
 	PilotPawn.Reset();
@@ -621,8 +652,23 @@ void AFPVDroneActor::ApplyCameraSettings()
 	CameraPivot->SetRelativeRotation(FRotator(Settings.UptiltDeg, 0.0f, 0.0f));
 	if (Settings.Mode == EFPVCameraMode::Chase)
 	{
-		Camera->SetRelativeLocation(FVector(-Settings.ChaseDistanceCm, 0.0f, Settings.ChaseDistanceCm * 0.3f));
-		Camera->SetRelativeRotation(FRotator(-15.0f, 0.0f, 0.0f));
+		// Chase camera behind/above the drone, but trace against the world so it does not clip
+		// through the ground or walls.
+		const float Dist = Settings.ChaseDistanceCm;
+		const FVector PivotWorld = CameraPivot->GetComponentLocation();
+		const FVector Behind = GetActorQuat().RotateVector(FVector(-Dist, 0.0f, Dist * 0.3f));
+		FVector CamWorld = PivotWorld + Behind;
+		if (UWorld* World = GetWorld())
+		{
+			FHitResult Hit;
+			FCollisionQueryParams Query(SCENE_QUERY_STAT(FPVChaseCam), false, this);
+			if (World->LineTraceSingleByChannel(Hit, PivotWorld, CamWorld, ECC_Camera, Query))
+			{
+				CamWorld = Hit.Location - Behind.GetSafeNormal() * 10.0f;
+			}
+		}
+		Camera->SetWorldLocation(CamWorld);
+		Camera->SetWorldRotation(FRotationMatrix::MakeFromX(PivotWorld - CamWorld).Rotator());
 		CameraBody->SetOwnerNoSee(false);
 	}
 	else
