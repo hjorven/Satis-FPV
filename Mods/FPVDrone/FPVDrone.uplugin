@@ -1,0 +1,32 @@
+{
+	"FileVersion": 3,
+	"Version": 1,
+	"VersionName": "0.1.0",
+	"SemVersion": "0.1.0",
+	"FriendlyName": "FPV Drone",
+	"Description": "Fly real FPV quadcopters: Betaflight rates and tuning, Acro/Angle/Horizon/3D, HID radio support (e.g. Radiomaster Pocket), multiplayer. Unlock in the AWESOME Shop.",
+	"Category": "Modding",
+	"CreatedBy": "hjorven",
+	"CreatedByURL": "https://github.com/hjorven/Satis-FPV",
+	"DocsURL": "https://github.com/hjorven/Satis-FPV",
+	"CanContainContent": true,
+	"IsBetaVersion": true,
+	"IsExperimentalVersion": false,
+	"Installed": false,
+	"AcceptsAnyRemoteVersion": false,
+	"RemoteVersionRange": "0.1.0",
+	"Modules": [
+		{
+			"Name": "FPVDrone",
+			"Type": "Runtime",
+			"LoadingPhase": "PostDefault"
+		}
+	],
+	"Plugins": [
+		{
+			"Name": "SML",
+			"Enabled": true,
+			"SemVersion": "^3.10.0"
+		}
+	]
+}

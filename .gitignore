@@ -1,0 +1,12 @@
+# Unreal / SML build artifacts
+Binaries/
+Intermediate/
+Saved/
+DerivedDataCache/
+*.pdb
+
+# Alpakit lokale Ziel-Voreinstellung (pro Rechner, nicht ins Repo)
+Mods/FPVDrone/Config/Alpakit.ini
+
+# C++-Simulationstest-Build
+tests/build/
